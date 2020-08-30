@@ -25,7 +25,7 @@ module.exports.createUser = (req, res) => {
       password: hash,
     }))
     .then((user) => res.status(200).contentType('JSON').send({ data: user }))
-    .catch((err) => res.status(400).send(err));
+    .catch(() => res.status(400).send({ message: 'переданы некорректные данные в метод создания пользователя' }));
 };
 
 module.exports.getUser = (req, res) => {
