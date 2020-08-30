@@ -15,6 +15,14 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
+  const myId = req.user._id;
+
+  if (req.params.cardId !== myId) {
+    return res
+      .status(403)
+      .send({ message: 'У вас недостаточно прав' });
+  }
+
   Card.findByIdAndDelete(req.params.cardId)
     .orFail()
     .then((card) => res.status(200).contentType('JSON').send({ data: card }))
