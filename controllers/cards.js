@@ -16,14 +16,21 @@ module.exports.createCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   const myId = req.user._id;
+  const { cardId } = req.params;
 
-  if (req.params.cardId !== myId) {
-    return res
-      .status(403)
-      .send({ message: 'У вас недостаточно прав' });
-  }
+  Card.findById(cardId)
+    // eslint-disable-next-line consistent-return
+    .then((card) => {
+      const owner = card.owner._id.toString();
 
-  Card.findByIdAndDelete(req.params.cardId)
+      if (owner !== myId) {
+        return res
+          .status(403)
+          .send({ message: 'У вас недостаточно прав' });
+      }
+    });
+
+  Card.findByIdAndDelete(cardId)
     .orFail()
     .then((card) => res.status(200).contentType('JSON').send({ data: card }))
     .catch(() => res.status(404).send({ message: 'Ресурс не найден' }));
