@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/not-found-err');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -10,7 +11,7 @@ module.exports.getUsers = (req, res) => {
     .catch(() => res.status(404).send({ message: 'Произошла ошибка' }));
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -29,32 +30,28 @@ module.exports.createUser = (req, res) => {
     .then(() => res.status(200).contentType('JSON').send({
       name, about, avatar, email,
     }))
-    .catch(() => res.status(400).send({ message: 'переданы некорректные данные в метод создания пользователя' }));
+    .catch(() => {
+      throw new NotFoundError('Внутренняя ошибка сервера');
+    })
+    .catch(next);
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   User.find({})
     .then((users) => {
       const user = users.filter((item) => item._id.toString() === req.params.id);
 
       if (user.length === 0) {
-        res.status(404);
-        res.send({ error: 'Такого пользователя нет' });
-        return;
+        throw new NotFoundError('Такого пользователя нет');
       }
-
       res.status(200);
       res.contentType('JSON');
       res.send(user);
     })
-    .catch(() => {
-      res.status(500);
-      res.contentType('JSON');
-      res.send({ message: 'Внутренняя ошибка сервера' });
-    });
+    .catch(next);
 };
 
-module.exports.patchUsers = (req, res) => {
+module.exports.patchUsers = (req, res, next) => {
   const myId = req.user._id;
   User.findByIdAndUpdate(myId, req.body)
     .then((user) => {
@@ -63,10 +60,9 @@ module.exports.patchUsers = (req, res) => {
       res.send({ data: user });
     })
     .catch(() => {
-      res.status(400);
-      res.contentType('JSON');
-      res.send({ message: 'Произошла ошибка' });
-    });
+      throw new NotFoundError('Внутренняя ошибка сервера');
+    })
+    .catch(next);
 };
 
 module.exports.login = (req, res) => {

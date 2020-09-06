@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
 const auth = require('./middlewares/auth.js');
+const NotFoundError = require('./errors/not-found-err');
 const { createUser, login } = require('./controllers/users');
 
 console.log(process.env.NODE_ENV);
@@ -28,8 +29,8 @@ app.use(express.static(`${__dirname}/public`));
 
 app.post('/signin', login);
 app.post('/signup', createUser);
-app.use('/', auth, usersRouter);
-app.use('/', auth, cardsRouter);
+app.use('/', usersRouter);
+app.use('/', cardsRouter);
 
 app.use((req, res, next) => {
   const error = new Error('Not found');
@@ -37,7 +38,10 @@ app.use((req, res, next) => {
   res.contentType('JSON');
   error.status = 404;
   res.send({ message: 'Запрашиваемый ресурс не найден' });
-  next();
+});
+
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.message });
 });
 
 app.listen(PORT, () => {
