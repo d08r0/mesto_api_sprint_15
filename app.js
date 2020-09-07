@@ -10,6 +10,7 @@ const cardsRouter = require('./routes/cards.js');
 const auth = require('./middlewares/auth.js');
 const NotFoundError = require('./errors/not-found-err');
 const { createUser, login } = require('./controllers/users');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 console.log(process.env.NODE_ENV);
 
@@ -29,6 +30,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(express.static(`${__dirname}/public`));
 
+app.use(requestLogger);
+
 app.post('/signin', login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -41,6 +44,8 @@ app.post('/signup', celebrate({
 
 app.use('/', auth, usersRouter);
 app.use('/', auth, cardsRouter);
+
+app.use(errorLogger);
 
 app.use((req, res, next) => {
   const error = new Error('Not found');
