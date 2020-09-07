@@ -31,16 +31,16 @@ module.exports.deleteCard = (req, res, next) => {
       const owner = card.owner._id.toString();
 
       if (owner !== myId) {
-        // return res
-        // .status(403);
-        // .send({ message: 'У вас недостаточно прав' });
-        throw new NotFoundError('Произошла ошибка');
+        throw new NotFoundError('У вас недостаточно прав');
       }
+
+      Card.findByIdAndDelete(cardId)
+        .orFail()
+        .then((card2) => res.status(200).contentType('JSON').send({ data: card2 }))
+        .catch(() => {
+          throw new NotFoundError('Ресурс не найден');
+        })
+        .catch(next);
     })
     .catch(next);
-
-  Card.findByIdAndDelete(cardId)
-    .orFail()
-    .then((card) => res.status(200).contentType('JSON').send({ data: card }))
-    .catch(() => res.status(404).send({ message: 'Ресурс не найден' }));
 };

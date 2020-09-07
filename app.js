@@ -29,8 +29,8 @@ app.use(express.static(`${__dirname}/public`));
 
 app.post('/signin', login);
 app.post('/signup', createUser);
-app.use('/', usersRouter);
-app.use('/', cardsRouter);
+app.use('/', auth, usersRouter);
+app.use('/', auth, cardsRouter);
 
 app.use((req, res, next) => {
   const error = new Error('Not found');
@@ -41,7 +41,15 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.message });
+  const { statusCode = 500, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
 });
 
 app.listen(PORT, () => {
