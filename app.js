@@ -3,6 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const { errors } = require('celebrate');
+const { celebrate, Joi } = require('celebrate');
 const usersRouter = require('./routes/users.js');
 const cardsRouter = require('./routes/cards.js');
 const auth = require('./middlewares/auth.js');
@@ -28,7 +30,15 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(express.static(`${__dirname}/public`));
 
 app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+    avatar: Joi.string().required(),
+    email: Joi.string().required(),
+  }).unknown(true),
+}), createUser);
+
 app.use('/', auth, usersRouter);
 app.use('/', auth, cardsRouter);
 
@@ -39,6 +49,8 @@ app.use((req, res, next) => {
   error.status = 404;
   res.send({ message: 'Запрашиваемый ресурс не найден' });
 });
+
+app.use(errors());
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
