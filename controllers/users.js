@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -31,7 +32,7 @@ module.exports.createUser = (req, res, next) => {
       name, about, avatar, email,
     }))
     .catch(() => {
-      throw new NotFoundError('Внутренняя ошибка сервера');
+      throw new BadRequestError('Произошла ошибка');
     })
     .catch(next);
 };
@@ -60,7 +61,7 @@ module.exports.patchUsers = (req, res, next) => {
       res.send({ data: user });
     })
     .catch(() => {
-      throw new NotFoundError('Внутренняя ошибка сервера');
+      throw new BadRequestError('Произошла ошибка');
     })
     .catch(next);
 };
