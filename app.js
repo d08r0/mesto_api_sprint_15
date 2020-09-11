@@ -53,12 +53,8 @@ app.use('/', auth, cardsRouter);
 
 app.use(errorLogger);
 
-app.use((req, res, next) => {
-  const error = new Error('Not found');
-  res.status(404);
-  res.contentType('JSON');
-  error.status = 404;
-  res.send({ message: 'Запрашиваемый ресурс не найден' });
+app.use(() => {
+  throw new NotFoundError('Ресурс не найден');
 });
 
 app.use(errors());
