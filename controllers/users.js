@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
+const ConflictError = require('../errors/conflict-err');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -14,11 +15,8 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.createUser = (req, res, next) => {
   const {
-    name, about, avatar, email, password,
+    name, about, avatar, email,
   } = req.body;
-
-  console.log(password);
-  console.log(email);
 
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
@@ -31,7 +29,11 @@ module.exports.createUser = (req, res, next) => {
     .then(() => res.status(200).contentType('JSON').send({
       name, about, avatar, email,
     }))
-    .catch(() => {
+    .catch((err) => {
+      if (err.code === 11000) {
+        throw new ConflictError('Пароль занят');
+      }
+
       throw new BadRequestError('Произошла ошибка');
     })
     .catch(next);
