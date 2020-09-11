@@ -7,10 +7,13 @@ const ConflictError = require('../errors/conflict-err');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((user) => res.status(200).contentType('JSON').send({ data: user }))
-    .catch(() => res.status(404).send({ message: 'Произошла ошибка' }));
+    .catch(() => {
+      throw new BadRequestError('Произошла ошибка');
+    })
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
