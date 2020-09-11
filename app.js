@@ -28,8 +28,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
 });
 
-app.use(express.static(`${__dirname}/public`));
-
 app.use(requestLogger);
 
 app.get('/crash-test', () => {
@@ -59,6 +57,7 @@ app.use(() => {
 
 app.use(errors());
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
 
