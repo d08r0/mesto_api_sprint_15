@@ -59,7 +59,7 @@ module.exports.getUser = (req, res, next) => {
 
 module.exports.patchUsers = (req, res, next) => {
   const myId = req.user._id;
-  User.findByIdAndUpdate(myId, req.body)
+  User.findByIdAndUpdate(myId, req.body, { new: true })
     .then((user) => {
       res.status(200);
       res.contentType('JSON');
